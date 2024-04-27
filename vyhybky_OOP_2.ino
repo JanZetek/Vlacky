@@ -47,7 +47,6 @@ class ABC
 
   public:
     bool stav;
-    bool can = false;
 
     // Konstruktor
     ABC(int rele_pin, int led_pin) : RELE_PIN(rele_pin), LED_PIN(led_pin) {}
@@ -59,27 +58,19 @@ class ABC
       pinMode(LED_PIN, OUTPUT);
     }
 
-    void onChange()
-    {
-      can = true;
-    }
-
-    void offChange()
-    {
-      can = false;
-    }
-
     void on()
     {
+      stav = true;
+
       // Zapne systém ABC
-      if (can == true) {
-        digitalWrite(RELE_PIN, HIGH);
-        digitalWrite(LED_PIN, HIGH);
-      }
+      digitalWrite(RELE_PIN, HIGH);
+      digitalWrite(LED_PIN, HIGH);
     }
 
     void off()
     {
+      stav = false;
+
       // Vypne systém ABC
       digitalWrite(RELE_PIN, LOW);
       digitalWrite(LED_PIN, LOW);
@@ -134,14 +125,19 @@ class Semafor
     int LED_GREEN_PIN;
     int LED_RED_PIN;
     int LED_YELLOW_PIN;
-    ABC A;
+
+    int P_LED_GREEN_PIN;
+    int P_LED_RED_PIN;
+    int P_LED_YELLOW_PIN;
+
+    ABC U;
 
   public:
     int semafor_stav;
     int type = 0; // 0 -> GR; 1 -> GYR; 2 -> BW
 
     // Konstruktor
-    Semafor(int led_green_pin, int led_red_pin, ABC a) : LED_GREEN_PIN(led_green_pin), LED_RED_PIN(led_red_pin), A(a) {}
+    Semafor(int led_green_pin, int led_red_pin, int p_led_green_pin, int p_led_red_pin, ABC u) : LED_GREEN_PIN(led_green_pin), LED_RED_PIN(led_red_pin), P_LED_GREEN_PIN(p_led_green_pin), P_LED_RED_PIN(p_led_red_pin), U(u) {}
 
     // led_green_pin & led_red_pin jsou u typu BW pužívány jako blue a white
 
@@ -150,13 +146,16 @@ class Semafor
       // Inicializace
       pinMode(LED_GREEN_PIN, OUTPUT);
       pinMode(LED_RED_PIN, OUTPUT);
+      pinMode(P_LED_GREEN_PIN, OUTPUT);
+      pinMode(P_LED_RED_PIN, OUTPUT);
 
       semafor_stav = 0;
     }
 
-    void GYR(int led_yellow_pin)
+    void GYR(int led_yellow_pin, int p_led_yellow_pin)
     {
       LED_YELLOW_PIN = led_yellow_pin;
+      P_LED_YELLOW_PIN = p_led_yellow_pin;
 
       type = 1;
 
@@ -176,10 +175,15 @@ class Semafor
       digitalWrite(LED_GREEN_PIN, LOW); 
       digitalWrite(LED_RED_PIN, HIGH);
 
+      digitalWrite(P_LED_GREEN_PIN, LOW);
+      digitalWrite(P_LED_RED_PIN, HIGH);
+
       if (type == 1)
         digitalWrite(LED_YELLOW_PIN, LOW);
 
       semafor_stav = 0;
+
+      U.on();
     }
 
     void enable()
@@ -187,6 +191,9 @@ class Semafor
       // Zapne zelou, vypne červenou a relé
       digitalWrite(LED_GREEN_PIN, HIGH);
       digitalWrite(LED_RED_PIN, LOW);
+
+      digitalWrite(P_LED_GREEN_PIN, HIGH);
+      digitalWrite(P_LED_RED_PIN, LOW);
 
       if (type == 1)
         digitalWrite(LED_YELLOW_PIN, LOW);
@@ -308,8 +315,20 @@ bool ableToGreen(bool* right_way, Vyhybka* array, Semafor S)
 
 };
 
-Semafor S1(19, 26);
-Semafor S2(24, 15);
+bool ableOffABC(Semafor S)
+{
+  if (S.semafor_stav == 1)
+  {
+    return true;
+  }
+  return false;
+}
+
+ABC U1(25, 50);
+ABC U2(23, 51);
+
+Semafor S1(19, 26, 13, 12, U1);
+Semafor S2(24, 15, 36, 14, U2);
 
 Vyhybka V1(30, 29, 52, S1, S2);
 
@@ -320,6 +339,15 @@ void setup() {
   V1.begin();
   S1.begin();
   S2.begin();
+
+  U1.begin();
+  U2.begin();
+
+  pinMode(46, INPUT);
+  pinMode(44, INPUT);
+  pinMode(42, INPUT);
+  pinMode(40, INPUT);
+  pinMode(38, INPUT);
 }
 
 void loop() {
@@ -373,4 +401,35 @@ void loop() {
     }
   }
 
+  else if (digitalRead(40) == HIGH)
+  {
+    if (ableOffABC(S1) == true && U1.stav == true)
+    {
+      U1.off();
+    }
+    else if (U1.stav == false)
+    {
+      U1.on();
+    }
+    else
+    {
+      Serial.println("Nelze změnit");
+    }
+  }
+
+  else if (digitalRead(38) == HIGH)
+  {
+    if (ableOffABC(S2) == true && U2.stav == true)
+    {
+      U2.off();
+    }
+    else if (U2.stav == false)
+    {
+      U2.on();
+    }
+    else
+    {
+      Serial.println("Nelze změnit");
+    }
+  }
 }
