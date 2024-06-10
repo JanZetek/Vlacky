@@ -2,6 +2,7 @@
 #define Vyhybka_h
 
 #include <Arduino.h>
+#include "ServoManager.h"
 
 class Vyhybka 
 {
@@ -14,13 +15,16 @@ class Vyhybka
     ServoManager Servo;
     Semafor S1;
     Semafor S2;
+    int left_angle;
+    int right_angle;
   
   public:
-    bool stav; // false -> vlevo; true -> vpravo
+    bool stav = false; // false -> vlevo; true -> vpravo
+    bool* p_stav = &stav;
+    char* LABEL;
 
     // konstruktor
-    Vyhybka(int led_1_pin, int led_2_pin, int servo_pin, Semafor s1, Semafor s2) : Servo(servo_pin), LED_1_PIN(led_1_pin), LED_2_PIN(led_2_pin), SERVO_PIN(servo_pin), S1(s1), S2(s2) {}
-
+    Vyhybka(int led_1_pin, int led_2_pin, int servo_pin, Semafor s1, Semafor s2, char* label, int left_angle, int right_angle) : Servo(servo_pin, left_angle, right_angle), LED_1_PIN(led_1_pin), LED_2_PIN(led_2_pin), SERVO_PIN(servo_pin), S1(s1), S2(s2), LABEL(label), left_angle(left_angle), right_angle(right_angle) {}
 
     void begin() 
     {
@@ -48,27 +52,40 @@ class Vyhybka
       pinMode(RELE_PIN, OUTPUT);
     }
 
+    bool print_stav()
+    {
+      Serial.println(stav);
+      return stav;
+    }
+
     void change()
     {
-      if (stav == false) {
-        stav = true; // přepna orientaci výhybky vpravo
-      } else {
-        stav = false;
+      switch (*p_stav) 
+      {
+        case false:
+          *p_stav = true;
+          break;
+        
+        case true:
+          *p_stav = false;
+          break;
       }
 
       Servo.begin(); // Vůbvec nevím, proč to tady je, ale bez toho to nefunguje
-      Servo.setAngle(stav ? 0 : 180); // přepne servo na základě orientace do požadovaného úhlu
+      Servo.setAngle(*p_stav ? true : false); // přepne servo na základě orientace do požadovaného úhlu
 
-      digitalWrite(LED_1_PIN, stav ? HIGH : LOW);
-      digitalWrite(LED_2_PIN, stav ? LOW : HIGH);
+      digitalWrite(LED_1_PIN, *p_stav ? HIGH : LOW);
+      digitalWrite(LED_2_PIN, *p_stav ? LOW : HIGH);
 
       // Pokud je kolej srdcová, přepne se relé
       if (srdcova == true)
-        digitalWrite(RELE_PIN, stav ? LOW : HIGH);
+        digitalWrite(RELE_PIN, *p_stav ? LOW : HIGH);
 
       // Nastaví na obou dvou semaforech červenou
       S1.disable(); 
       S2.disable();
+
+      print_stav();
     }
 
     void blick()

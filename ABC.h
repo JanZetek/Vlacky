@@ -1,7 +1,7 @@
 #ifndef ABC_h
 #define ABC_h
 
-#include <Arduino.h>
+// #include <Arduino.h>
 
 class ABC
 {
