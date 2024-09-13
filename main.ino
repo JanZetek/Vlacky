@@ -8,58 +8,50 @@
 #include "Display.h"
 #include "Vyhybka.h"
 #include "Button.h"
+#include "Light.h"
+#include "Otocka.h"
 #include "kontrola.h"
-#include "debug.h"
 
-ABC U1(20, 24);
-ABC U2(9, 22);
+ABC U1(20, 22);
+ABC U2(9, 24);
 
 Semafor S1(10, 11, U1);
 Semafor S2(31, 25, U2);
 
-Vyhybka V1(47, 46, 53, S1, S2, "Vyhybka", 50, 110);
+Vyhybka V1(46, 47, 53, S1, S2, "Výhybka 1", 50, 110);
 
-Vyhybka* vyhybky[] = {&V1};
+Button B_U1(13, []() {U1.change();});
+Button B_U2(17, []() {U2.change();});
 
-Button_Vyhybka Button1(19, V1);
+Button B_S1(23, []() {S1.change();});
+Button B_S2(21, []() {S2.change();});
 
-bool right_way_2[] = {false};
+Button B_V1(19, []() {V1.change();});
 
-Button_Semafor Button2(21, S1, right_way_2, vyhybky, 1);
+Vyhybka* array_vyhybka[] = {&V1};
 
-bool right_way_3[] = {true};
-Button_Semafor Button3(23, S2, right_way_3, vyhybky, 1);
-
-Button_ABC Button4(17, U1, &S1);
-Button_ABC Button5(13, U2, &S2);
+bool right_way_1_1[] = {false};
+bool right_way_1_2[] = {true};
 
 void setup() {
 
   Serial.begin(9600);
 
   V1.begin();
+
   S1.begin();
   S2.begin();
 
   U1.begin();
   U2.begin();
-
-  if (Button4.S == &S1)
-  {
-    Serial.println("Adresy se shodují");
-  }
-  else
-  {
-    Serial.println("Adresy se neshodují");
-  }
 }
 
 void loop() {
-  // Serial.println("start of loop");
-  Button1.look();
-  Button2.look();
-  Button3.look();
-  Button4.look();
-  Button5.look();
-  // Serial.println("end of loop");
+  B_U1.look();
+  B_U2.look();
+
+  B_S1.look_semafor(array_vyhybka, right_way_1_1, 1);
+  B_S2.look_semafor(array_vyhybka, right_way_1_2, 1);
+
+  B_V1.look();
 }

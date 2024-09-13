@@ -6,8 +6,8 @@ class Light
 {
   private:
     int LED_A_PIN; //analog
-    unsigned long after = 0; // po jakém čase se má obnovit
-    unsigned long time = 0; // čas od posledního resetu
+    unsigned long after; // po jakém čase se má obnovit
+    unsigned long time = millis(); // pointer na čas z main
 
   public:
 
@@ -21,14 +21,16 @@ class Light
 
     void update()
     {
-      if (time == after)
+      if (time >= after)
       {
-        after = random(50, 150);
-        time = 0;
-        time = millis();
+        after = time + random(50, 150);
 
-        analogWrite(LED_A_PIN, random(300, 900) * 0.255);
+        Serial.println(millis());
+
+        analogWrite(LED_A_PIN, random(64, 255));
       }
+
+      time = millis();
     }
 };
 

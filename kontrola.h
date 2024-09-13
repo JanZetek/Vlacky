@@ -2,13 +2,10 @@
 #define kontrola_h
 
 #include "Vyhybka.h"
-#include "Semafor.h"
-#include "Servo.h"
-#include "debug.h"
 
-bool ableSemafor(bool* right_way, Vyhybka** now_way)
+bool ableSemafor(bool* right_way, Vyhybka** now_way, int len)
 {
-  int len = sizeof(right_way) / sizeof(right_way[0]); // velikost pole
+  // int len = sizeof(right_way) / sizeof(right_way[0]); // velikost pole
 
   for (int i = 0; i < len; i++)
   {
@@ -20,6 +17,7 @@ bool ableSemafor(bool* right_way, Vyhybka** now_way)
       Serial.print("\n");
       
       Serial.println("false");
+      (*now_way[i]).blick();
       return false;
     }
   }

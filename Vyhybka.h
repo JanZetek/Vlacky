@@ -58,19 +58,8 @@ class Vyhybka
       return stav;
     }
 
-    void change()
+    void zmena_orientace()
     {
-      switch (*p_stav) 
-      {
-        case false:
-          *p_stav = true;
-          break;
-        
-        case true:
-          *p_stav = false;
-          break;
-      }
-
       Servo.begin(); // Vůbvec nevím, proč to tady je, ale bez toho to nefunguje
       Servo.setAngle(*p_stav ? true : false); // přepne servo na základě orientace do požadovaného úhlu
 
@@ -88,11 +77,27 @@ class Vyhybka
       print_stav();
     }
 
+    void change()
+    {
+      switch (*p_stav) 
+      {
+        case false:
+          *p_stav = true;
+          break;
+        
+        case true:
+          *p_stav = false;
+          break;
+      }
+
+      zmena_orientace();
+    }
+
     void blick()
     {
       Serial.println("Zablikam");
 
-      switch (stav)
+      switch (*p_stav)
       {
         case false:
           digitalWrite(LED_1_PIN, HIGH);
@@ -105,6 +110,20 @@ class Vyhybka
           digitalWrite(LED_2_PIN, LOW);
           break;
       }
+    }
+
+    void to_false()
+    {
+      *p_stav = false;
+
+      zmena_orientace();
+    }
+
+    void to_true()
+    {
+      *p_stav = true;
+
+      zmena_orientace();
     }
 
 };

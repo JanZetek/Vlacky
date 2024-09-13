@@ -60,6 +60,7 @@ class Semafor
       *p_stav = 0;
 
       U.on();
+      U.disable_switch();
     }
 
     void enable()
@@ -72,6 +73,8 @@ class Semafor
         digitalWrite(LED_YELLOW_PIN, LOW);
 
       *p_stav = 1;
+
+      U.enable_switch();
     }
 
     void next()
@@ -85,6 +88,12 @@ class Semafor
 
     void change()
     {
+      change_2();
+    }
+
+    void change_2()
+    {
+
       Serial.println("Semafor byl vyvolán");
       if ((*p_type == 0) || (*p_type == 2))
       {
